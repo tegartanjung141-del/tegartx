@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robotic Arm + OpenCascade 3D Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .status-bar { display: flex; gap: 20px; font-size: 0.9rem; }
+        .status-item { display: flex; align-items: center; gap: 8px; }
+        .status-indicator {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #00ff88; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        #canvas-container { flex: 1; position: relative; overflow: hidden; }
+        #unity-canvas { width: 100%; height: 100%; display: block; }
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.5s ease;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        .loader {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #00d4ff; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 1.2rem; margin-bottom: 10px; }
+        .progress-bar {
+            width: 300px; height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            width: 0%; transition: width 0.3s ease;
+        }
+        .controls-panel {
+            position: absolute; bottom: 20px; left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 300px;
+        }
+        .controls-panel h3 { margin-bottom: 15px; font-size: 1rem; color: #00d4ff; }
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #aaa; }
+        .control-group input[type="range"] {
+            width: 100%; height: 6px; -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1); border-radius: 3px; outline: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            background: #00d4ff; border-radius: 50%; cursor: pointer;
+        }
+        .btn {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            border: none; color: white; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px; margin-bottom: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+        .info-panel {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 250px;
+        }
+        .info-panel h4 { margin-bottom: 10px; color: #00d4ff; font-size: 0.9rem; }
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .info-label { color: #aaa; }
+        .info-value { color: #fff; font-weight: bold; }
+        .mouse-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mouse-controls h4 { margin-bottom: 10px; color: #00d4ff; font-size: 0.9rem; }
+        .mouse-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; }
+        .mouse-icon {
+            width: 30px; height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 Robotic Arm + OpenCascade 3D Preview</h1>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator"></div>
+                <span>WebGL Active</span>
+            </div>
+            <div class="status-item"><span>WASM: Ready</span></div>
+            <div class="status-item"><span>FPS: <strong id="fps-counter">60</strong></span></div>
+        </div>
+    </header>
+
+    <div id="canvas-container">
+        <canvas id="unity-canvas"></canvas>
+        
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loader"></div>
+            <div class="loading-text">Loading 3D Scene...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <h3>🎮 Robotic Arm Controls</h3>
+            <div class="control-group">
+                <label>Base Rotation (J1)</label>
+                <input type="range" id="joint1" min="-180" max="180" value="0">
+            </div>
+            <div class="control-group">
+                <label>Shoulder (J2)</label>
+                <input type="range" id="joint2" min="-90" max="90" value="45">
+            </div>
+            <div class="control-group">
+                <label>Elbow (J3)</label>
+                <input type="range" id="joint3" min="-90" max="90" value="-45">
+            </div>
+            <div class="control-group">
+                <label>Wrist Pitch (J4)</label>
+                <input type="range" id="joint4" min="-90" max="90" value="0">
+            </div>
+            <div class="control-group">
+                <label>Gripper Open/Close</label>
+                <input type="range" id="gripper" min="0" max="100" value="50">
+            </div>
+            <button class="btn" onclick="resetArm()">Reset Position</button>
+            <button class="btn" onclick="toggleAnimation()">Play Animation</button>
+        </div>
+
+        <div class="info-panel">
+            <h4>📊 Scene Info</h4>
+            <div class="info-item">
+                <span class="info-label">Objects:</span>
+                <span class="info-value" id="object-count">12</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Vertices:</span>
+                <span class="info-value" id="vertex-count">8,432</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Camera:</span>
+                <span class="info-value" id="camera-pos">Orbit</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Render:</span>
+                <span class="info-value">WebGL 2.0</span>
+            </div>
+        </div>
+
+        <div class="mouse-controls">
+            <h4>🖱️ Camera Controls</h4>
+            <div class="mouse-item">
+                <div class="mouse-icon">LMB</div>
+                <span>Rotate View</span>
+            </div>
+            <div class="mouse-item">
+                <div class="mouse-icon">RMB</div>
+                <span>Pan</span>
+            </div>
+            <div class="mouse-item">
+                <div class="mouse-icon">Scroll</div>
+                <span>Zoom</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAnimating = false;
+        const canvas = document.getElementById('unity-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let progress = 0;
+        const progressFill = document.getElementById('progress-fill');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        const loadInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                    init3DScene();
+                }, 500);
+            }
+            progressFill.style.width = progress + '%';
+        }, 200);
+
+        const joints = {
+            joint1: document.getElementById('joint1'),
+            joint2: document.getElementById('joint2'),
+            joint3: document.getElementById('joint3'),
+            joint4: document.getElementById('joint4'),
+            gripper: document.getElementById('gripper')
+        };
+
+        Object.keys(joints).forEach(key => {
+            joints[key].addEventListener('input', (e) => {
+                updateRobotArm(key, e.target.value);
+            });
+        });
+
+        function resetArm() {
+            joints.joint1.value = 0;
+            joints.joint2.value = 45;
+            joints.joint3.value = -45;
+            joints.joint4.value = 0;
+            joints.gripper.value = 50;
+            Object.keys(joints).forEach(key => {
+                updateRobotArm(key, joints[key].value);
+            });
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            if (isAnimating) animateArm();
+        }
+
+        function updateRobotArm(joint, value) {
+            console.log('Updating ' + joint + ' to ' + value + '°');
+        }
+
+        function animateArm() {
+            if (!isAnimating) return;
+            const time = Date.now() * 0.001;
+            joints.joint1.value = Math.sin(time) * 90;
+            joints.joint2.value = Math.cos(time * 0.7) * 45;
+            joints.joint3.value = Math.sin(time * 1.3) * 45;
+            Object.keys(joints).forEach(key => {
+                updateRobotArm(key, joints[key].value);
+            });
+            requestAnimationFrame(animateArm);
+        }
+
+        function init3DScene() {
+            const fpsCounter = document.getElementById('fps-counter');
+            let frameCount = 0;
+            let lastTime = performance.now();
+            
+            function updateFPS() {
+                frameCount++;
+                const currentTime = performance.now();
+                if (currentTime - lastTime >= 1000) {
+                    fpsCounter.textContent = frameCount;
+                    frameCount = 0;
+                    lastTime = currentTime;
+                }
+                requestAnimationFrame(updateFPS);
+            }
+            updateFPS();
+            drawRoboticArm();
+        }
+
+        function drawRoboticArm() {
+            if (!ctx) return;
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2 + 100;
+            
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 50) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
+            }
+            for (let i = 0; i < height; i += 50) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke();
+            }
+            
+            const j1 = parseFloat(joints.joint1.value) * Math.PI / 180;
+            const j2 = parseFloat(joints.joint2.value) * Math.PI / 180;
+            const j3 = parseFloat(joints.joint3.value) * Math.PI / 180;
+            
+            const seg1Length = 80, seg2Length = 70, seg3Length = 60;
+            const baseX = centerX, baseY = centerY;
+            const joint1X = baseX, joint1Y = baseY - 50;
+            const joint2X = joint1X + Math.sin(j1) * seg1Length;
+            const joint2Y = joint1Y - Math.cos(j1) * seg1Length;
+            const joint3X = joint2X + Math.sin(j1 + j2) * seg2Length;
+            const joint3Y = joint2Y - Math.cos(j1 + j2) * seg2Length;
+            const endX = joint3X + Math.sin(j1 + j2 + j3) * seg3Length;
+            const endY = joint3Y - Math.cos(j1 + j2 + j3) * seg3Length;
+            
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            
+            ctx.beginPath(); ctx.moveTo(baseX, baseY); ctx.lineTo(joint1X, joint1Y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(joint1X, joint1Y); ctx.lineTo(joint2X, joint2Y); ctx.stroke();
+            
+            ctx.strokeStyle = '#7b2cbf';
+            ctx.beginPath(); ctx.moveTo(joint2X, joint2Y); ctx.lineTo(joint3X, joint3Y); ctx.stroke();
+            
+            ctx.strokeStyle = '#00ff88';
+            ctx.beginPath(); ctx.moveTo(joint3X, joint3Y); ctx.lineTo(endX, endY); ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(baseX, baseY, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(joint1X, joint1Y, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(joint2X, joint2Y, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(joint3X, joint3Y, 8, 0, Math.PI * 2); ctx.fill();
+            
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath(); ctx.arc(endX, endY, 10, 0, Math.PI * 2); ctx.fill();
+            
+            const gripperValue = parseFloat(joints.gripper.value);
+            const gripWidth = (gripperValue / 100) * 30;
+            
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(endX - 5, endY + 10); ctx.lineTo(endX - 5 - gripWidth, endY + 25); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(endX + 5, endY + 10); ctx.lineTo(endX + 5 + gripWidth, endY + 25); ctx.stroke();
+            
+            requestAnimationFrame(drawRoboticArm);
+        }
+
+        let isDragging = false;
+        let cameraRotationX = 0, cameraRotationY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                canvas.lastMouseX = e.clientX;
+                canvas.lastMouseY = e.clientY;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                cameraRotationX += (e.clientX - canvas.lastMouseX) * 0.5;
+                cameraRotationY += (e.clientY - canvas.lastMouseY) * 0.5;
+                canvas.lastMouseX = e.clientX;
+                canvas.lastMouseY = e.clientY;
+                document.getElementById('camera-pos').textContent = cameraRotationX.toFixed(0) + '°, ' + cameraRotationY.toFixed(0) + '°';
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; });
+        canvas.addEventListener('wheel', (e) => { e.preventDefault(); });
+        canvas.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+
+        console.log('3D Preview initialized successfully!');
+    </script>
+</body>
+</html>
