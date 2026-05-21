@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fin-Survival: Belajar Keuangan</title>
+<meta name="description" content="Aplikasi edukasi keuangan interaktif untuk anak muda Indonesia.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* === STYLE LAMA TETAP SAMA + PENAMBAHAN BARU === */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#fafafa;--fg:#09090b;--primary:#18181b;--secondary:#f4f4f5;--accent:#3b82f6;--border:#e4e4e7;--muted:#71717a;--radius:1rem}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.app{min-height:100vh;max-width:28rem;margin:0 auto;padding:1.5rem;position:relative}
+
+/* HEADER DASHBOARD DUOLINGO-STYLE */
+.dashboard-header{background:#fff;border-bottom:1px solid var(--border);padding:1rem 1.5rem;border-radius:var(--radius);box-shadow:0 2px 8px -2px rgb(0 0 0/.1);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+.streak{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1.1rem}
+.streak-flame{font-size:1.8rem;animation:flame 1.2s infinite alternate}
+@keyframes flame{0%{transform:scale(1)}100%{transform:scale(1.15)}}
+.xp-container{display:flex;align-items:center;gap:8px}
+.xp-bar{width:110px;height:8px;background:var(--secondary);border-radius:9999px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);transition:width .4s ease}
+.level-badge{background:var(--primary);color:#fff;padding:2px 10px;border-radius:9999px;font-size:13px;font-weight:800}
+
+/* MASCOT IMPROVEMENT */
+.mascot-wrap{position:relative;margin:0 auto}
+.mascot-wrap img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.mascot-shadow{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:65%;height:12px;background:rgba(0,0,0,.08);filter:blur(6px);border-radius:50%}
+.mascot-bob{animation:bob 2.8s ease-in-out infinite}
+.mascot-wiggle{animation:wiggle 2.2s ease-in-out infinite}
+.mascot-excited{animation:excited 0.8s ease-in-out infinite}
+.mascot-proud{animation:proud 3s ease-in-out infinite}
+
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes wiggle{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-8deg)}75%{transform:translateY(-8px) rotate(8deg)}}
+@keyframes excited{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.12) translateY(-15px)}}
+@keyframes proud{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+.card{background:#fff;border:1px solid var(--border);box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);border-radius:var(--radius);transition:all .2s ease}
+.btn{background:var(--primary);color:#fff;padding:.85rem 1.5rem;border-radius:.75rem;font-weight:700;border:none;cursor:pointer;font-size:1.05rem;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%}
+.btn:active{transform:scale(.97)}
+.hearts{font-size:1.6rem;display:flex;gap:4px}
+.label{font-size:10px;text-transform:uppercase;font-weight:700;color:#a1a1aa;letter-spacing:.1em}
+.text-center{text-align:center}
+.hidden{display:none!important}
+.screen{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.grid-1{display:grid;grid-template-columns:1fr;gap:.75rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.option-card{display:flex;align-items:center;padding:1.25rem;text-align:left;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 6px -1px rgb(0 0 0/.1);transition:all .2s;width:100%}
+.option-card:hover{border-color:#d4d4d8;transform:translateY(-2px)}
+.option-card .icon{font-size:2.5rem;margin-right:1.25rem;transition:transform .2s}
+.option-card:hover .icon{transform:scale(1.1)}
+.option-card .info{flex:1}
+.option-card .info h3{font-weight:700;font-size:1.125rem;margin-bottom:2px}
+.option-card .info p{font-size:.75rem;color:var(--muted)}
+.option-card .chevron{color:#d4d4d8;transition:color .2s;font-size:1.25rem}
+.option-card:hover .chevron{color:var(--primary)}
+.age-card{padding:1rem;text-align:center;font-weight:700;font-size:1.125rem;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 6px -1px rgb(0 0 0/.1);transition:all .2s}
+.age-card:hover{transform:translateY(-2px);border-color:#d4d4d8}
+.age-card small{display:block;font-size:.625rem;opacity:.5;font-weight:400;margin-top:2px}
+.world-card{padding:1.5rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 6px -1px rgb(0 0 0/.1);transition:all .2s;position:relative;overflow:hidden;width:100%}
+.world-card:hover{transform:translateY(-2px);border-color:#d4d4d8}
+.world-card .emoji{font-size:3rem;transition:transform .2s}
+.world-card:hover .emoji{transform:scale(1.1)}
+.world-card .lock-overlay{position:absolute;inset:0;background:rgba(255,255,255,.8);backdrop-filter:blur(1px);display:flex;align-items:center;justify-content:center}
+h1{font-size:1.875rem;font-weight:700;letter-spacing:-.025em;color:var(--primary)}
+h2{font-size:1.5rem;font-weight:700;color:var(--primary);line-height:1.3}
+.sub{color:var(--muted);font-weight:500;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em}
+.btn-back{background:#fff;border:1px solid #e4e4e7;border-radius:.75rem;padding:.75rem;cursor:pointer;box-shadow:0 1px 2px rgb(0 0 0/.05);transition:background .2s}
+.btn-back:hover{background:var(--secondary)}
+.btn-ghost{background:transparent;color:var(--muted);border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;transition:color .2s}
+.btn-ghost:hover{color:#ef4444}
+.path-line{position:absolute;top:0;bottom:0;left:50%;width:4px;background:var(--secondary);transform:translateX(-50%);z-index:0}
+.level-node{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;cursor:pointer;border:none;background:transparent;font-family:inherit}
+.level-icon{width:5rem;height:5rem;border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:1.875rem;transition:all .2s}
+.level-icon-active{background:#fff;border:1px solid #e4e4e7;box-shadow:0 4px 6px -1px rgb(0 0 0/.1)}
+.level-icon-active:hover{box-shadow:0 10px 15px -3px rgb(0 0 0/.1);transform:translateY(-4px)}
+.level-icon-locked{background:var(--secondary);color:#d4d4d8;border:1px solid #f4f4f5}
+.level-badge{margin-top:.75rem;padding:.375rem 1rem;border-radius:9999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border:1px solid}
+.level-badge-active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.level-badge-locked{background:var(--secondary);color:#a1a1aa;border-color:#f4f4f5}
+.star-badge{position:absolute;top:-6px;right:-6px;background:var(--primary);color:#fff;padding:4px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 2px rgb(0 0 0/.1);line-height:0}
+.sim-header{text-align:center;background:var(--primary);color:#fff;padding:1.5rem;border-radius:1rem;position:relative;overflow:hidden}
+.sim-header .label{color:#a1a1aa}
+.sim-header .value{font-size:2.5rem;font-weight:700;letter-spacing:-.025em}
+.trade-card{display:flex;align-items:center;padding:1rem;cursor:pointer;font-family:inherit;width:100%}
+.trade-icon{font-size:2.5rem;margin-right:1rem;transition:transform .2s}
+.trade-card:hover .trade-icon{transform:scale(1.1)}
+.msg-box{background:#eff6ff;padding:1rem;border-radius:.75rem;border:1px solid #bfdbfe;font-size:.875rem;font-weight:500;color:#1e40af;font-style:italic;text-align:center}
+.aha-box{background:var(--secondary);padding:1.5rem;border-radius:1rem;border:1px solid #e4e4e7;text-align:left}
+.aha-icon{font-size:1.5rem;background:#fff;padding:.5rem;border-radius:.5rem;border:1px solid #f4f4f5;box-shadow:0 1px 2px rgb(0 0 0/.05);display:inline-flex}
+.input-field{width:100%;background:#fff;border:1px solid var(--border);border-radius:.75rem;padding:.75rem 1rem;font-weight:700;font-size:1.25rem;font-family:inherit;outline:none;transition:border-color .2s}
+.input-field:focus{border-color:var(--primary)}
+.input-sm{font-size:1.125rem}
+.spent-panel{background:var(--primary);color:#fff;padding:1.5rem;border-radius:1rem;margin-top:auto}
+.spent-value{font-size:2.5rem;font-weight:700;color:#f87171;letter-spacing:-.025em}
+.tag-red{font-size:10px;color:#dc2626;font-weight:700;background:#fef2f2;padding:2px 6px;border-radius:6px}
+.item-btn{display:flex;align-items:center;justify-content:space-between;padding:1rem;width:100%;cursor:pointer;font-family:inherit}
+.item-icon-wrap{background:var(--secondary);padding:.625rem;border-radius:.75rem;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.item-btn:hover .item-icon-wrap{background:var(--primary);color:#fff}
+.flex{display:flex}.items-center{align-items:center}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}
+.flex-1{flex:1}.mt-auto{margin-top:auto}.mb-2{margin-bottom:.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}
+.mt-3{margin-top:.75rem}.mt-8{margin-top:2rem}.mt-10{margin-top:2.5rem}.mt-12{margin-top:3rem}.py-8{padding-top:2rem;padding-bottom:2rem}.py-12{padding-top:3rem;padding-bottom:3rem}
+.space-y-3>*+*{margin-top:.75rem}.space-y-4>*+*{margin-top:1rem}.space-y-6>*+*{margin-top:1.5rem}.space-y-8>*+*{margin-top:2rem}.space-y-12>*+*{margin-top:3rem}
+.text-xs{font-size:.75rem}.text-sm{font-size:.875rem}.text-lg{font-size:1.125rem}.text-xl{font-size:1.25rem}.text-2xl{font-size:1.5rem}.text-3xl{font-size:1.875rem}.text-4xl{font-size:2.25rem}
+.font-bold{font-weight:700}.font-black{font-weight:900}.text-zinc-400{color:#a1a1aa}.text-zinc-500{color:#71717a}.text-zinc-900{color:#18181b}
+.tracking-tight{letter-spacing:-.025em}.leading-tight{line-height:1.25}
+.mission-icon{font-size:1.5rem;transition:all .5s}
+.mission-done{filter:none;transform:scale(1.1)}
+.mission-pending{filter:grayscale(1);opacity:.3}
+svg{display:inline-block;vertical-align:middle}
+
+.progress-dots{display:flex;gap:.5rem;justify-content:center;margin-top:3rem}
+.dot{height:6px;border-radius:9999px;transition:all .3s}
+.dot-active{width:2rem;background:var(--primary)}
+.dot-inactive{width:6px;background:#e4e4e7}
+.quiz-option{padding:1rem;border-radius:.75rem;border:1px solid var(--border);font-weight:700;font-size:1rem;text-align:left;cursor:pointer;font-family:inherit;background:#fff;transition:all .2s;display:flex;align-items:center;justify-content:space-between;width:100%}
+.quiz-correct{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+.quiz-wrong{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+.feedback-box{margin-top:1.5rem;padding:1rem;background:var(--secondary);border-radius:.75rem;border:1px solid #f4f4f5;font-size:.875rem;font-weight:500;color:#52525b;font-style:italic;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ==================== DATA & PROGRESS ==================== */
+const CONTENT={"needs-wants":{school:[{id:"nw_1",text:"Uang jajanmu minggu ini tinggal Rp50.000. Teman-teman ngajak mabar dan beli skin baru. Apa yang kamu lakukan?",options:[{id:"a",text:"Beli skin biar keren",isCorrect:false,feedback:"Skin itu keinginan (want), bukan kebutuhan (need). Uang jajanmu bisa habis!"},{id:"b",text:"Tabung buat bensin/makan",isCorrect:true,feedback:"Pintar! Bensin dan makan adalah kebutuhan untuk bertahan hidup sekolah."}]}],street:[{id:"nw_1",text:"Ada sisa Rp100.000 di kantong. Kamu belum bayar iuran keamanan lingkungan, tapi ada diskon baju incaran. Pilih mana?",options:[{id:"a",text:"Beli baju mumpung diskon",isCorrect:false,feedback:"Diskon sering menipu. Iuran keamanan adalah kewajiban/kebutuhan."},{id:"b",text:"Bayar iuran keamanan",isCorrect:true,feedback:"Tepat! Prioritaskan kewajiban agar hidup di jalanan tetap tenang."}]}]},savings:{school:[{id:"sv_1",text:"Laptopmu tiba-tiba lemot dan perlu servis mendadak. Kamu gak punya tabungan. Apa dampaknya?",options:[{id:"a",text:"Pinjam uang teman",isCorrect:false,feedback:"Pinjam uang menambah beban di masa depan. Lebih baik punya Dana Darurat."},{id:"b",text:"Menyesal gak nabung",isCorrect:true,feedback:"Inilah pentingnya Dana Darurat. Kejadian tak terduga selalu ada!"}]}],street:[{id:"sv_1",text:"Ban motormu bocor di tengah malam saat mau narik. Gak ada bengkel buka kecuali yang mahal. Punya simpanan?",options:[{id:"a",text:"Terpaksa utang bengkel",isCorrect:false,feedback:"Utang di saat darurat biasanya bunganya mahal. Tabungan adalah pelindungmu."},{id:"b",text:"Pakai uang cadangan",isCorrect:true,feedback:"Inilah fungsi 'Shield' (Tabungan). Kamu tetap bisa narik besok!"}]}]}};
+const LESSONS=[{id:"barter",title:"Barter ke Uang",emoji:"🍎"},{id:"time-money",title:"Tenaga vs Waktu",emoji:"⏳"},{id:"needs-wants",title:"Butuh vs Ingin",emoji:"🎯"},{id:"savings",title:"Tabungan",emoji:"🛡️"}];
+const WORLDS=[{id:"village",name:"The Village",emoji:"🏡",sub:"Dasar Kelola Uang"},{id:"city",name:"The City",emoji:"🏙️",sub:"Aturan Sosial & Waktu"},{id:"capital",name:"The Capital",emoji:"🏛️",sub:"Investasi & Aset"}];
+const SVG={chevron:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',back:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',lock:'<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',star:'<svg width="12" height="12" fill="white" stroke="none" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',arrow:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',check:'<svg width="20" height="20" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>',x:'<svg width="20" height="20" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',refresh:'<svg width="20" height="20" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',starYellow:'<svg width="12" height="12" fill="#facc15" stroke="#facc15" stroke-width="1" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',trending:'<svg width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>'};
+
+let profile = JSON.parse(localStorage.getItem('fin_profile')||'null');
+let progress = JSON.parse(localStorage.getItem('fin_progress')||'[]');
+
+/* === DUOLINGO CORE BARU === */
+let streak = 0;
+let xp = 0;
+let userLevel = 1;
+let lastLoginDate = null;
+let currentWorld = null;
+let currentLevel = null;
+
+/* Load & update streak + XP */
+function loadCoreProgress() {
+  const today = new Date().toDateString();
+  lastLoginDate = localStorage.getItem('fin_lastlogin');
+  streak = parseInt(localStorage.getItem('fin_streak')||'0');
+  xp = parseInt(localStorage.getItem('fin_xp')||'0');
+  userLevel = Math.floor(xp / 250) + 1;
+
+  if (lastLoginDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (lastLoginDate === yesterday) streak++;
+    else streak = 1;
+    localStorage.setItem('fin_streak', streak);
+    localStorage.setItem('fin_lastlogin', today);
+  }
+}
+function addXP(amount) {
+  xp += amount;
+  userLevel = Math.floor(xp / 250) + 1;
+  localStorage.setItem('fin_xp', xp);
+}
+
+/* ==================== IMPROVED MASCOT ==================== */
+function mascot(expr, size, cls='') {
+  let animClass = 'mascot-bob';
+  let src = 'moni-neutral.png';
+
+  if (expr === 'happy' || expr === 'excited') {
+    animClass = expr === 'excited' ? 'mascot-excited' : 'mascot-wiggle';
+    src = 'moni-happy.png';
+  } else if (expr === 'sad') {
+    src = 'moni-sad.png';
+  } else if (expr === 'proud') {
+    animClass = 'mascot-proud';
+    src = 'moni-happy.png';
+  } else if (expr === 'thinking') {
+    src = 'moni-neutral.png';
+  }
+
+  return `
+    <div class="mascot-wrap ${cls}" style="width:${size}px;height:${size}px">
+      <div class="mascot-shadow"></div>
+      <div class="${animClass}" style="width:100%;height:100%">
+        <img src="public/assets/${src}" alt="Moni" style="width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply">
+      </div>
+    </div>`;
+}
+
+/* ==================== RENDER HEADER DASHBOARD ==================== */
+function renderDashboardHeader() {
+  return `
+  <div class="dashboard-header">
+    <div class="streak">
+      🔥 <span class="streak-flame">${streak}</span> 
+      <span style="font-size:0.95rem;margin-left:4px">hari streak</span>
+    </div>
+    <div class="xp-container">
+      <div class="level-badge">Lv.${userLevel}</div>
+      <div class="xp-bar"><div class="xp-fill" style="width:${Math.min(((xp % 250)/250)*100,100)}%"></div></div>
+      <span style="font-weight:700;font-size:0.95rem">${xp % 250}/250</span>
+    </div>
+  </div>`;
+}
+
+/* ==================== RENDER UTAMA (dengan perubahan) ==================== */
+function render() {
+  loadCoreProgress(); // selalu update dulu
+  const app = document.getElementById('app');
+  if(!profile){renderOnboarding();return}
+  if(!currentWorld){renderWorldMap();return}
+  if(!currentLevel){renderLevelPath();return}
+  renderLevel();
+}
+
+/* World Map dengan dashboard + mascot greeting */
+function renderWorldMap() {
+  const app = document.getElementById('app');
+  const greeting = streak >= 7 ? 'Kamu gila! 🔥' : streak >= 3 ? 'Luar biasa!' : 'Semangat Moni!';
+  
+  let html = `<div class="screen py-8">${renderDashboardHeader()}`;
+  html += `<div class="text-center mb-8">${mascot(streak >= 5 ? 'excited' : 'happy', 140)}</div>`;
+  html += `<div class="text-center"><h1 class="mb-1">Halo, Pejuang!</h1><p style="color:#3b82f6;font-weight:700">${greeting} Streak ${streak} hari</p></div>`;
+  html += `<div class="grid-1 mt-10">`;
+  
+  WORLDS.forEach((w,i) => {
+    const locked = i > 0;
+    html += `<button class="world-card" onclick="${locked ? '' : `selectWorld('${w.id}')`}">
+      <div style="flex:1;text-align:left">
+        <div class="label mb-2">Chapter ${i+1}</div>
+        <div style="font-size:1.5rem" class="font-bold text-zinc-900 mb-2">${w.name}</div>
+        <div class="text-sm text-zinc-500">${w.sub}</div>
+      </div>
+      <span class="emoji">${w.emoji}</span>
+      ${locked ? `<div class="lock-overlay">${SVG.lock}</div>` : ''}
+    </button>`;
+  });
+  html += `</div></div>`;
+  app.innerHTML = html;
+}
+
+/* Quiz dengan HEARTS */
+let qIdx = 0, qSelected = null, qFeedback = false, qScore = 0, currentHearts = 3;
+
+function resetQuiz(){ qIdx=0; qSelected=null; qFeedback=false; qScore=0; currentHearts=3; }
+
+function renderQuiz(){
+  const app = document.getElementById('app');
+  const questions = CONTENT[currentLevel][profile.persona];
+  const q = questions[qIdx];
+
+  let html = `<div class="screen card" style="padding:2rem;min-height:600px;display:flex;flex-direction:column">`;
+  html += `<div class="flex" style="justify-content:space-between;margin-bottom:1.5rem"><div class="label">Pertanyaan ${qIdx+1}/${questions.length}</div>`;
+  html += `<div class="hearts">${'❤️'.repeat(currentHearts)}</div></div>`;
+
+  html += `<div style="flex:1">${mascot(qFeedback ? (q.options.find(o=>o.id===qSelected)?.isCorrect ? 'excited' : 'sad') : 'thinking', 130, 'mb-6')}</div>`;
+  
+  html += `<h2 class="text-center mb-8">${q.text}</h2><div class="grid-1">`;
+  
+  q.options.forEach(o => {
+    let cls = 'quiz-option';
+    if(qFeedback){
+      if(o.isCorrect) cls += ' quiz-correct';
+      else if(qSelected===o.id && !o.isCorrect) cls += ' quiz-wrong';
+      else cls += ' quiz-dim';
+    }
+    html += `<button class="${cls}" onclick="quizSelect('${o.id}')" ${qFeedback?'disabled':''}>${o.text}</button>`;
+  });
+  
+  if(qFeedback){
+    const fb = q.options.find(o=>o.id===qSelected)?.feedback;
+    html += `<div class="feedback-box">"${fb}"</div>`;
+  }
+  
+  html += `</div><button class="btn mt-8" onclick="quizNext()" ${qFeedback?'':'disabled'}>${qIdx<questions.length-1?'Lanjut':'Selesai'} →</button></div>`;
+  app.innerHTML = html;
+}
+
+function quizSelect(id){
+  if(qFeedback) return;
+  qSelected = id; qFeedback = true;
+  const q = CONTENT[currentLevel][profile.persona][qIdx];
+  if(q.options.find(o=>o.id===id)?.isCorrect){
+    qScore++;
+    addXP(20); // XP tiap jawaban benar
+  } else {
+    currentHearts--;
+  }
+  renderQuiz();
+}
+
+function quizNext(){
+  if(currentHearts <= 0){
+    alert("💔 Nyawa habis! Coba lagi besok atau ulangi lesson ini.");
+    resetQuiz();
+    currentLevel = null;
+    render();
+    return;
+  }
+  const questions = CONTENT[currentLevel][profile.persona];
+  if(qIdx < questions.length-1){
+    qIdx++; qSelected=null; qFeedback=false;
+    renderQuiz();
+  } else {
+    addXP(100); // bonus selesai lesson
+    resetQuiz();
+    completeLevel();
+  }
+}
+
+/* Complete level */
+function completeLevel(){
+  if(currentLevel && !progress.includes(currentLevel)){
+    progress.push(currentLevel);
+    localStorage.setItem('fin_progress', JSON.stringify(progress));
+  }
+  currentLevel = null;
+  render();
+}
+
+// ONBOARDING
+let obStep='persona',obProfile={persona:'',ageGroup:'',status:''};
+function renderOnboarding(){
+  const app=document.getElementById('app');
+  let html=`<div class="screen" style="display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:2rem 0">`;
+  html+=mascot('neutral',150,'mb-8');
+  html+=`<div style="width:100%;flex:1">`;
+  if(obStep!=='persona')html+=`<button class="btn-back mb-6 flex items-center gap-1" onclick="obBack()" style="font-size:.875rem;font-weight:700;color:#71717a;background:transparent;border:none;cursor:pointer">${SVG.back} Kembali</button>`;
+  if(obStep==='persona'){
+    html+=`<div class="space-y-8"><div class="text-center"><h2 style="font-size:1.875rem" class="font-bold text-zinc-900 mb-2">Pilih Jalan Hidupmu</h2><p class="text-zinc-500 text-sm">Pilih salah satu untuk memulai petualanganmu</p></div><div class="grid-1">`;
+    [{id:'school',title:'Pejuang Sekolah',desc:'Fokus pada tabungan dan uang jajan.',icon:'🎒'},{id:'street',title:'Pejuang Jalanan',desc:'Fokus pada arus kas dan bertahan hidup.',icon:'🏍️'}].forEach(p=>{
+      html+=`<button class="option-card" onclick="obSelect('persona','${p.id}')"><span class="icon">${p.icon}</span><div class="info"><h3>${p.title}</h3><p>${p.desc}</p></div><span class="chevron">${SVG.chevron}</span></button>`;
+    });
+    html+=`</div></div>`;
+  }else if(obStep==='age'){
+    html+=`<div class="space-y-8"><div class="text-center"><h2 class="text-3xl font-black text-zinc-900 leading-tight mb-2">Berapa Umurmu?</h2><p class="sub">Sesuaikan kuis dengan usiamu</p></div><div class="grid-2">`;
+    ['13-17','18-24','25-35','36-50','51+'].forEach(a=>{html+=`<button class="age-card" onclick="obSelect('age','${a}')">${a}<small>Tahun</small></button>`;});
+    html+=`</div></div>`;
+  }else if(obStep==='status'){
+    html+=`<div class="space-y-8"><div class="text-center"><h2 class="text-3xl font-black text-zinc-900 leading-tight mb-2">Status Saat Ini?</h2><p class="sub">Apa kesibukan harianmu?</p></div><div class="grid-1">`;
+    ['Pelajar/Mahasiswa','Karyawan','Freelancer','Ibu Rumah Tangga','Pengusaha','Driver Ojol'].forEach(s=>{html+=`<button class="option-card" onclick="obSelect('status','${encodeURIComponent(s)}')" style="padding:1rem 1.25rem"><div class="info"><h3 style="font-size:1rem">${s}</h3></div></button>`;});
+    html+=`</div></div>`;
+  }
+  html+=`</div><div class="progress-dots">`;
+  ['persona','age','status'].forEach(s=>{html+=`<div class="dot ${obStep===s?'dot-active':'dot-inactive'}"></div>`;});
+  html+=`</div></div>`;
+  app.innerHTML=html;
+}
+function obSelect(field,val){
+  val=decodeURIComponent(val);
+  obProfile[field]=val;
+  if(field==='persona'){obStep='age';renderOnboarding();}
+  else if(field==='age'){obStep='status';renderOnboarding();}
+  else{profile=obProfile;localStorage.setItem('fin_profile',JSON.stringify(profile));render();}
+}
+function obBack(){if(obStep==='age')obStep='persona';else if(obStep==='status')obStep='age';renderOnboarding();}
+
+
+// LEVEL PATH
+function renderLevelPath(){
+  const app=document.getElementById('app');
+  const offsets=['0','3.5rem','-3.5rem'];
+  let html=`<div class="screen" style="min-height:100vh;padding-bottom:5rem"><header class="flex items-center gap-4 mb-8"><button class="btn-back" onclick="currentWorld=null;render()">${SVG.back}</button><div><h1 style="font-size:1.5rem" class="tracking-tight">The Village</h1><p class="sub flex items-center gap-1 mt-1">${SVG.starYellow} ${progress.length} / 4 Pelajaran Selesai</p></div></header>`;
+  html+=`<div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3rem;padding:1rem 0"><div class="path-line"></div>`;
+  LESSONS.forEach((l,i)=>{
+    const done=progress.includes(l.id);
+    const unlocked=i===0||progress.includes(LESSONS[i-1].id);
+    const locked=!unlocked;
+    const off=offsets[i%3];
+    html+=`<button class="level-node" style="transform:translateX(${off})" onclick="${locked?'':`selectLevel('${l.id}')`}"><div class="level-icon ${locked?'level-icon-locked':'level-icon-active'}" style="position:relative">${locked?SVG.lock:l.emoji}${done?`<div class="star-badge">${SVG.star}</div>`:''}</div><div class="level-badge ${locked?'level-badge-locked':'level-badge-active'}">${l.title}</div></button>`;
+  });
+  html+=`</div></div>`;
+  app.innerHTML=html;
+}
+function selectLevel(id){currentLevel=id;render();}
+
+
+// LEVEL ROUTER
+function renderLevel(){
+  if(currentLevel==='barter')renderBarter();
+  else if(currentLevel==='time-money')renderLifeClock();
+  else if(currentLevel==='needs-wants'||currentLevel==='savings')renderQuiz();
+  else renderPlaceholder();
+}
+function completeLevel(){
+  if(currentLevel&&!progress.includes(currentLevel)){progress.push(currentLevel);localStorage.setItem('fin_progress',JSON.stringify(progress));}
+  currentLevel=null;render();
+}
+
+
+// PLACEHOLDER
+function renderPlaceholder(){
+  const app=document.getElementById('app');
+  app.innerHTML=`<div class="screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1rem;min-height:80vh"><div style="font-size:2.5rem">🏗️</div><h2>Simulasi ${currentLevel} Sedang Dibangun</h2><button class="btn" style="max-width:12rem" onclick="currentLevel=null;render()">Kembali</button></div>`;
+}
+
+
+// BARTER SIM
+let barterPhase='intro',barterInv=['Jasa Desain'],barterGoals={bensin:false,snack:false},barterMsg='Coba tukarkan Jasa Desain-mu untuk mendapatkan kebutuhanmu.';
+function resetBarter(){barterPhase='intro';barterInv=['Jasa Desain'];barterGoals={bensin:false,snack:false};barterMsg='Coba tukarkan Jasa Desain-mu untuk mendapatkan kebutuhanmu.';}
+function renderBarter(){
+  const app=document.getElementById('app');
+  let html=`<div class="screen card" style="padding:2rem;min-height:600px;display:flex;flex-direction:column">`;
+  if(barterPhase==='intro'){
+    html+=`<div class="space-y-6 text-center" style="padding:1rem 0">${mascot('sad',140)}<h2 class="mt-3">Bayangkan Desa Tanpa Uang...</h2><p class="text-zinc-500 text-sm" style="line-height:1.6">Kamu baru saja menyelesaikan desain logo. Perutmu lapar, motormu mogok, dan besok harus bayar kos. Tapi di desa ini, <span style="color:#dc2626;font-weight:700">UANG TIDAK ADA</span>.</p><button class="btn" onclick="barterPhase='play';renderBarter()">Mulai Barter ${SVG.arrow}</button></div>`;
+  }else if(barterPhase==='play'){
+    html+=`<div class="space-y-8" style="flex:1;display:flex;flex-direction:column"><div class="flex" style="justify-content:space-between;align-items:flex-start"><div style="background:#fafafa;padding:1rem;border-radius:1rem;flex:1;margin-right:1rem;border:1px solid #f4f4f5"><div class="label mb-2">Isi Kantong</div><div class="flex gap-2" style="flex-wrap:wrap">`;
+    barterInv.forEach(i=>{html+=`<span style="background:#fff;border:1px solid #e4e4e7;color:#52525b;padding:.25rem .5rem;border-radius:.5rem;font-size:10px;font-weight:700">${i}</span>`;});
+    html+=`</div></div><div style="text-align:right"><div class="label mb-2">Misi</div><div class="flex gap-2"><span class="mission-icon ${barterGoals.snack?'mission-done':'mission-pending'}">🍪</span><span class="mission-icon ${barterGoals.bensin?'mission-done':'mission-pending'}">⛽</span></div></div></div>`;
+    html+=`<div class="msg-box">"${barterMsg}"</div><div class="grid-1">`;
+    [{name:'Pak Eko (Tukang Bensin)',icon:'⛽',wants:'Snack',action:'tradeBensin'},{name:'Bu Sari (Penjual Snack)',icon:'🍪',wants:'Jasa Desain',action:'tradeSnack'},{name:'Bang Jago (Pemilik Kos)',icon:'🏠',wants:'Semuanya',action:'tradeKos'}].forEach(t=>{
+      html+=`<button class="card trade-card" onclick="${t.action}()"><span class="trade-icon">${t.icon}</span><div style="flex:1"><div class="font-bold text-zinc-900">${t.name}</div><div class="label mt-1">Mau: <span style="color:#ef4444">${t.wants}</span></div></div></button>`;
+    });
+    html+=`</div><button class="btn mt-auto" onclick="barterFinish()" ${barterGoals.bensin&&barterGoals.snack?'':'disabled'}>Lapor ke Bang Jago (Pemilik Kos)</button></div>`;
+  }else{
+    html+=`<div class="space-y-6 text-center" style="padding:1rem 0">${mascot('neutral',140)}<h2>"Tunggu Dulu..."</h2><p class="text-zinc-500 text-sm" style="line-height:1.6">Bang Jago tetap tidak mau barter. Dia butuh sesuatu yang <b>universal</b> untuk bayar sekolah anaknya.</p><div class="aha-box"><div class="flex items-center gap-3 mb-2"><span class="aha-icon">💡</span><span class="label">Aha Moment!</span></div><div class="text-sm font-bold" style="line-height:1.6">Inilah alasan uang diciptakan. Uang adalah <span style="color:#2563eb;font-weight:700">Alat Tukar Universal</span> yang disukai semua orang.</div></div><button class="btn" onclick="resetBarter();completeLevel()">Lanjutkan ke Revolusi Uang</button></div>`;
+  }
+  html+=`</div>`;
+  app.innerHTML=html;
+}
+function tradeSnack(){
+  if(barterInv.includes('Jasa Desain')){barterInv=barterInv.filter(i=>i!=='Jasa Desain');barterInv.push('Snack');barterGoals.snack=true;barterMsg='Mantap! Bu Sari perlu desain logo baru, kamu dapat Snack.';}
+  else barterMsg="Bu Sari: 'Logo saya sudah bagus kok. Saya lagi gak butuh desain.'";
+  renderBarter();
+}
+function tradeBensin(){
+  if(barterInv.includes('Snack')){barterInv=barterInv.filter(i=>i!=='Snack');barterInv.push('Bensin');barterGoals.bensin=true;barterMsg='Berhasil! Pak Eko butuh Snack buat anaknya, dia kasih kamu Bensin.';}
+  else barterMsg="Pak Eko: 'Maaf dek, saya lagi laper banget, cuma mau tukar sama Snack.'";
+  renderBarter();
+}
+function tradeKos(){barterMsg="Bang Jago: 'Aduh dek, saya harus bayar sekolah anak pakai uang. Saya gak butuh Snack atau Bensin!'";renderBarter();}
+function barterFinish(){if(barterGoals.bensin&&barterGoals.snack){barterPhase='aha';renderBarter();}}
+
+
+// LIFE CLOCK SIM
+let lcPhase='input',lcData={income:500000,hours:8,days:22},lcBought=[];
+function resetLC(){lcPhase='input';lcData={income:profile.status==='Pelajar/Mahasiswa'?500000:3000000,hours:8,days:22};lcBought=[];}
+function renderLifeClock(){
+  const app=document.getElementById('app');
+  const rate=Math.floor(lcData.income/(lcData.hours*lcData.days));
+  let html=`<div class="screen card" style="padding:2rem;min-height:600px;display:flex;flex-direction:column">`;
+  if(lcPhase==='input'){
+    html+=`<div class="space-y-6">${mascot('neutral',140,'text-center')}<h2 class="text-center">Berapa Harga Waktumu?</h2><div style="background:#fafafa;padding:1.5rem;border-radius:1rem;border:1px solid #f4f4f5" class="space-y-4"><div><div class="label mb-2">Penghasilan (Rp)</div><input type="number" class="input-field" value="${lcData.income}" onchange="lcData.income=parseInt(this.value)"></div><div class="grid-2"><div><div class="label mb-2">Jam Kerja / Hari</div><input type="number" class="input-field input-sm" value="${lcData.hours}" onchange="lcData.hours=parseInt(this.value)"></div><div><div class="label mb-2">Hari / Bulan</div><input type="number" class="input-field input-sm" value="${lcData.days}" onchange="lcData.days=parseInt(this.value)"></div></div></div><button class="btn" onclick="lcPhase='sim';renderLifeClock()">Lihat Jam Hidupmu ${SVG.arrow}</button></div>`;
+  }else if(lcPhase==='sim'){
+    const totalH=lcBought.reduce((a,i)=>a+(i.price/rate),0);
+    const items=[{name:'Kopi Kekinian',price:45000,icon:'☕'},{name:'Baju Baru',price:250000,icon:'👕'},{name:'Top-up Game',price:150000,icon:'🎮'}];
+    html+=`<div class="space-y-6" style="flex:1;display:flex;flex-direction:column"><div class="sim-header"><div class="label mb-2">Harga Hidupmu / Jam</div><div class="value">Rp${rate.toLocaleString('id-ID')}</div></div><div class="space-y-3"><div class="label" style="padding-left:4px">Simulasi Belanja</div><div class="grid-1">`;
+    items.forEach(item=>{
+      html+=`<button class="card item-btn" onclick="lcBought.push({name:'${item.name}',price:${item.price}});renderLifeClock()"><div class="flex items-center gap-3"><div class="item-icon-wrap">${item.icon}</div><div class="font-bold text-sm">${item.name}</div></div><div style="text-align:right"><div class="font-bold text-sm">Rp${item.price.toLocaleString('id-ID')}</div><div class="tag-red">-${(item.price/rate).toFixed(1)} Jam</div></div></button>`;
+    });
+    html+=`</div></div><div class="spent-panel"><div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:.5rem"><div class="label" style="color:#a1a1aa">Waktu Terjual</div>${SVG.trending}</div><div class="spent-value">${totalH.toFixed(1)} <span style="font-size:.875rem;opacity:.5;margin-left:4px">JAM</span></div><p style="font-size:10px;color:#a1a1aa;margin-top:.5rem;font-weight:500">Kamu harus menukar waktu hidupmu sebanyak ini hanya untuk belanja di atas.</p></div>`;
+    html+=`<div class="flex gap-4 mt-3"><button class="btn-back" style="padding:1rem" onclick="resetLC();renderLifeClock()">${SVG.refresh}</button><button class="btn flex-1" onclick="lcPhase='aha';renderLifeClock()">Lanjutkan</button></div></div>`;
+  }else{
+    html+=`<div class="space-y-6 text-center" style="padding:1rem 0">${mascot('happy',140)}<h2>"Waktu adalah Aset Termahal"</h2><p class="text-zinc-500 text-sm" style="line-height:1.6">Setiap kali kamu membelanjakan uang, kamu sebenarnya sedang menukarkan "Jam Hidupmu".</p><div class="aha-box"><div class="flex items-center gap-3 mb-2"><span class="aha-icon">⌛</span><span class="label">Pesan Penting Moni</span></div><div class="text-sm font-bold" style="line-height:1.6">Berpikirlah dua kali: Apakah barang ini layak ditukar dengan jam hidupmu?</div></div><button class="btn" onclick="resetLC();completeLevel()">Simpan Pelajaran Ini</button></div>`;
+  }
+  html+=`</div>`;
+  app.innerHTML=html;
+}
+
+
+
+render(); // START
+</script>
+</body>
+</html>
