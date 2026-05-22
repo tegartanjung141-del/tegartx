@@ -1,0 +1,181 @@
+# Unity Project Settings untuk WebGL Build
+
+## Player Settings Configuration
+
+### Company & Product
+- **Company Name**: [Your Company]
+- **Product Name**: Robotic OCC WebGL
+
+### Resolution and Presentation
+- **Default Canvas Width**: 1920
+- **Default Canvas Height**: 1080
+- **Run In Background**: ✓ Enabled
+- **WebGL Template**: Default (atau custom template)
+- **Color Space**: Linear
+- **Auto Graphics API**: ✓ Enabled
+- **Auto Scripting Backend**: IL2CPP
+
+### Publishing Settings
+- **Compression Format**: Brotli (recommended) atau Gzip
+- **Decompression Fallback**: ✓ Enabled (untuk browser yang tidak support Brotli)
+- **Enable Exceptions**: Full With Stacktrace (untuk development) / Explicitly Thrown (untuk production)
+- **Memory Size**: 256 MB (minimum) / 512 MB (recommended untuk complex models)
+- **Enable Profiler**: ✓ Enabled (untuk development builds)
+- **Development Build**: ✓ Enabled (untuk testing)
+
+### Other Settings
+- **Scripting Define Symbols**: 
+  - `USE_OPENCASCADE`
+  - `ROBOTIC_VISUALIZATION`
+  - `WEBGL_BUILD`
+- **API Compatibility Level**: .NET Standard 2.1
+- **IL2CPP Code Generation**: Fastest (runtime) atau Faster build time
+
+## Quality Settings untuk WebGL
+
+### Level Details
+- **Level of Detail**: ✓ Enabled
+- **LOD Bias**: 1.0
+- **Maximum LOD Level**: 0 (no limit)
+
+### Rendering
+- **Anti Aliasing**: Disabled (untuk performance) atau 2x Multi Sampling
+- **Soft Particles**: ✗ Disabled
+- **Shadows**: Hard Shadows Only atau Disable untuk performance
+- **Shadow Resolution**: Low atau Medium
+- **Shadow Distance**: 50
+- **Shadow Cascades**: No Cascades
+- **Texture Quality**: Full Res atau Half Res
+- **Anisotropic Textures**: Disabled
+- **VSync Count**: Don't Sync
+
+## Physics Settings
+
+### General
+- **Gravity**: (0, -9.81, 0)
+- **Default Material**: None
+- **Bounce Threshold**: 2
+- **Sleep Threshold**: 0.005
+- **Contact Offset**: 0.01
+- **Solver Iteration Count**: 6
+- **Solver Velocity Iterations**: 1
+- **Friction Type**: Patch
+
+### Collision
+- **Collision Detection**: Discrete
+- **Continuous Dynamic**: ✗ Disabled (untuk performance)
+
+## Input Settings
+
+### Axes
+- **Mouse X**: Sensitivity 0.1, Gravity 0
+- **Mouse Y**: Sensitivity 0.1, Gravity 0
+- **Mouse ScrollWheel**: Sensitivity 0.1, Gravity 0
+- **Horizontal**: WASD + Arrow Keys
+- **Vertical**: WASD + Arrow Keys
+
+## Graphics Settings
+
+### Always Included Shaders
+- Standard
+- Standard (Specular setup)
+- Unlit/Color
+- Unlit/Texture
+
+### Shader Stripping
+- ✓ Strip Unused Variants
+- ✓ Keep Common Lightmap Modes
+
+## Build Settings
+
+### Platform: WebGL
+- **Architecture**: wasm32
+- **Target SDK**: WebGL 2.0
+- **Exception Support**: Full
+- **Debugging**: ✓ Enable
+
+### Scene in Build
+1. Scenes/MainScene (add your main scene here)
+2. Scenes/TestScene (optional test scenes)
+
+## Post-processing Settings (Optional)
+
+Jika menggunakan Post-processing Stack v2:
+- **Bloom**: ✓ Enabled (Intensity: 0.5, Threshold: 1)
+- **Ambient Occlusion**: ✗ Disabled (untuk performance)
+- **Motion Blur**: ✗ Disabled
+- **Depth of Field**: ✗ Disabled
+
+## Optimization Tips untuk WebGL
+
+### Memory Optimization
+1. Gunakan Asset Bundles untuk large assets
+2. Compress textures (ASTC atau ETC2)
+3. Reduce mesh complexity
+4. Use occlusion culling
+
+### Performance Optimization
+1. Batch static objects
+2. Use GPU instancing
+3. Minimize draw calls
+4. Reduce overdraw
+5. Use LOD for complex models
+
+### Build Size Optimization
+1. Enable managed code stripping
+2. Use incremental garbage collector
+3. Remove unused modules
+4. Compress audio files
+
+## Testing Checklist
+
+### Browser Compatibility
+- [ ] Chrome (latest)
+- [ ] Firefox (latest)
+- [ ] Safari (latest)
+- [ ] Edge (latest)
+
+### Feature Testing
+- [ ] Camera controls (orbit, zoom, pan)
+- [ ] Robotic arm movement
+- [ ] OpenCascade shape creation
+- [ ] Import/export functionality
+- [ ] UI interactions
+- [ ] Touch controls (mobile)
+
+### Performance Testing
+- [ ] Frame rate > 30 FPS
+- [ ] Memory usage < 200 MB
+- [ ] Load time < 5 seconds
+- [ ] No memory leaks
+
+## Deployment
+
+### Web Server Requirements
+- HTTPS recommended
+- Proper MIME types:
+  - `.wasm`: `application/wasm`
+  - `.data`: `application/octet-stream`
+  - `.js`: `application/javascript`
+  - `.html`: `text/html`
+
+### CDN Configuration
+- Enable CORS headers
+- Set proper cache headers
+- Enable compression (gzip/brotli)
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue**: WebGL context lost
+- **Solution**: Reduce memory usage, lower quality settings
+
+**Issue**: Slow performance
+- **Solution**: Enable profiling, optimize shaders, reduce draw calls
+
+**Issue**: Build too large
+- **Solution**: Enable code stripping, compress assets, use asset bundles
+
+**Issue**: Browser compatibility issues
+- **Solution**: Test on multiple browsers, use polyfills if needed
